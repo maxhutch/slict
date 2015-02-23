@@ -6,6 +6,8 @@ def test_basic_1d():
     sd = Slict(d)
     assert len(d) == len(sd)
     assert len(d) == len(sd[:])
+    assert "a" in sd
+    assert 1 in sd[:]
     for key in d:
         assert d[key] == sd[key]
     for key in sd:
@@ -29,6 +31,7 @@ def test_2d_leading():
     d[2, 2] = 4
     sd = Slict(d)
     sd1 = sd[:, 2]
+    assert 1 in sd1
     assert len(sd1) == 2
     assert sd1[1] == 3
     assert sd1[2] == 4
@@ -42,6 +45,7 @@ def test_2d_trailing():
     d[2, 3] = 5
     sd = Slict(d)
     sd1 = sd[2, :]
+    assert 3 in sd1
     assert len(sd1) == 2
     assert sd1[2] == 4
     assert sd1[3] == 5
@@ -54,10 +58,35 @@ def test_3d():
     d[2, 3, 3] = 8
     sd = Slict(d)
     sd2 = sd[2, :, :]
+    assert (2, 3) in sd2
     assert len(sd2) == 3
     assert sd2[2, 2] == 6
     assert sd2[2, 3] == 7
     assert sd2[3, 3] == 8
+
+
+def test_keys():
+    d = {}
+    d[2, 2, 2] = 6
+    d[2, 2, 3] = 7
+    d[2, 3, 3] = 8
+    sd = Slict(d)
+    sd2 = sd[2, :, :]
+    keys = sd2.keys()
+    for k in sd2:
+        assert k in keys
+
+
+def test_items():
+    d = {}
+    d[2, 2, 2] = 6
+    d[2, 2, 3] = 7
+    d[2, 3, 3] = 8
+    sd = Slict(d)
+    sd2 = sd[2, :, :]
+    d2 = dict(sd2.items())
+    for key in sd2:
+        assert sd2[key] == d2[key]
 
 
 def test_slice_bounds():
