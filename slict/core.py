@@ -7,6 +7,11 @@ def key_in_slice(k, s):
     for i in range(len(s)):
         if (not isinstance(s[i], slice)) and k[i] != s[i]:
             return False
+        if isinstance(s[i], slice):
+            if s[i].start != None and k[i] < s[i].start:
+                return False
+            if s[i].stop != None and k[i] >= s[i].stop:
+                return False
     return True
 
 
@@ -54,10 +59,10 @@ class Slict(Mapping):
           key[self.locs[i]] if self.locs[i] >= 0
           else self.pins[-self.locs[i]-1]
           for i in range(self.dim)])
-        if len(full_key) == 1:
-            full_key = full_key[0]
 
         if not any([isinstance(k, slice) for k in key]):
+            if len(full_key) == 1:
+                full_key = full_key[0]
             return self.d[full_key]
 
         return Slict(self.d, sl=full_key)
@@ -67,5 +72,4 @@ class Slict(Mapping):
                      for k in self.d if key_in_slice(k, self.sl)])
 
     def __len__(self):
-
         return len([k for k in self.d if key_in_slice(k, self.sl)])

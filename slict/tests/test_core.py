@@ -5,6 +5,7 @@ def test_basic_1d():
     d = {"a": "b", 1: "1.0"}
     sd = Slict(d)
     assert len(d) == len(sd)
+    assert len(d) == len(sd[:])
     for key in d:
         assert d[key] == sd[key]
     for key in sd:
@@ -57,3 +58,13 @@ def test_3d():
     assert sd2[2, 2] == 6
     assert sd2[2, 3] == 7
     assert sd2[3, 3] == 8
+
+
+def test_slice_bounds():
+    d = {}
+    for i in range(10):
+        d[i] = i
+    sd = Slict(d)
+    assert len(sd[:2]) == 2
+    assert len(sd[1:3]) == 2
+    assert len(sd[8:]) == 2
