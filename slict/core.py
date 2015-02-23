@@ -8,9 +8,9 @@ def key_in_slice(k, s):
         if (not isinstance(s[i], slice)) and k[i] != s[i]:
             return False
         if isinstance(s[i], slice):
-            if s[i].start != None and k[i] < s[i].start:
+            if s[i].start is not None and k[i] < s[i].start:
                 return False
-            if s[i].stop != None and k[i] >= s[i].stop:
+            if s[i].stop is not None and k[i] >= s[i].stop:
                 return False
     return True
 
