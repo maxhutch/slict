@@ -1,4 +1,4 @@
-from slict.core import Slict, CachedSlict
+from slict import Slict, CachedSlict
 
 
 def test_basic_1d():
