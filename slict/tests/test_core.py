@@ -132,7 +132,7 @@ def test_CachedSlict_2d():
     sd2 = sd[:, 2]
     for k in sd2:
         assert sd2[k] == k + 2
-    last = (0,)
+    last = 0
     for k in sd2.keys():
         assert k > last
         last = k

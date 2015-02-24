@@ -150,12 +150,12 @@ class CachedSlict(Slict):
         return
 
     def keys(self):
-        if self.dim == 1:
+        if len(self.key_parts) == 1:
             return self.key_parts[0]
         return [k for k in product(*self.key_parts) if k in self]
 
     def values(self):
-        if self.dim == 1:
+        if len(self.key_parts) == 1:
             return [self[k] for k in self.key_parts[0]]
         return [self[k] for k in product(*self.key_parts) if k in self]
 
