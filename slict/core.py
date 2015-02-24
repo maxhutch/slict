@@ -1,4 +1,5 @@
 from collections import Mapping
+from itertools import product
 
 
 def key_in_slice(k, s):
@@ -90,7 +91,9 @@ class Slict(Mapping):
           key[self.locs[i]] if self.locs[i] >= 0
           else self.pins[-self.locs[i]-1]
           for i in range(self.dim)])
-        return key_in_slice(full_key, self.sl)
+        if len(full_key) == 1:
+            full_key = full_key[0]
+        return key_in_slice(full_key, self.sl) and full_key in self.d
 
     def keys(self):
         return [key_from_slice(k, self.sl)
@@ -99,3 +102,64 @@ class Slict(Mapping):
     def items(self):
         return [(key_from_slice(k, self.sl), v)
                 for (k, v) in self.d.items() if key_in_slice(k, self.sl)]
+
+
+class CachedSlict(Slict):
+    """Slict that stores sorted keyspaces
+
+    CachedSlict guarantee lexographical ordering of keys(), values(),
+    and items(), allowing it to act more like a table.  You can call
+    update_cache() to sync the stored keyspaces when the backend dictionary
+    changes.
+    """
+
+    def __init__(self, d, sl=None):
+        super(CachedSlict, self).__init__(d, sl)
+        self.update_cache()
+
+    def __getitem__(self, key):
+        """If the key contains slices, return a new CachedSlict."""
+        if not isinstance(key, tuple):
+            key = (key,)
+        full_key = tuple([
+          key[self.locs[i]] if self.locs[i] >= 0
+          else self.pins[-self.locs[i]-1]
+          for i in range(self.dim)])
+
+        if not any([isinstance(k, slice) for k in key]):
+            if len(full_key) == 1:
+                full_key = full_key[0]
+            return self.d[full_key]
+
+        return CachedSlict(self.d, sl=full_key)
+
+    def update_cache(self):
+        """Update the sorted keyspaces stored in key_parts."""
+        self.key_parts = []
+        if self.dim == 1:
+            self.key_parts.append(sorted(list(set(
+                key_from_slice(k, self.sl)
+                for k in self.d if key_in_slice(k, self.sl)))))
+            return
+        for i in range(self.dim):
+            if not isinstance(self.sl[i], slice):
+                continue
+            self.key_parts.append(sorted(list(set(
+                k[i]
+                for k in self.d if key_in_slice(k, self.sl)))))
+        return
+
+    def keys(self):
+        if self.dim == 1:
+            return self.key_parts[0]
+        return [k for k in product(*self.key_parts) if k in self]
+
+    def values(self):
+        if self.dim == 1:
+            return [self[k] for k in self.key_parts[0]]
+        return [self[k] for k in product(*self.key_parts) if k in self]
+
+    def items(self):
+        if self.dim == 1:
+            return [(k, self[k]) for k in self.key_parts[0]]
+        return [(k, self[k]) for k in product(*self.key_parts) if k in self]

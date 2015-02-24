@@ -1,4 +1,4 @@
-from slict.core import Slict
+from slict.core import Slict, CachedSlict
 
 
 def test_basic_1d():
@@ -97,3 +97,69 @@ def test_slice_bounds():
     assert len(sd[:2]) == 2
     assert len(sd[1:3]) == 2
     assert len(sd[8:]) == 2
+
+
+def test_CachedSlict_1d():
+    d = {}
+    d[3] = 3
+    d[2] = 2
+    d[1] = 1
+    d[8] = 8
+    d[2] = 2
+    sd = CachedSlict(d)
+    sd2 = sd[:]
+    for k in sd2:
+        assert sd2[k] == k
+    last = 0
+    for k in sd2.keys():
+        assert k > last
+        last = k
+    items = sd2.items()
+    vals = sd2.values()
+    for k, v in items:
+        assert v == sd2[k]
+        assert v in vals
+
+
+def test_CachedSlict_2d():
+    d = {}
+    d[3, 2] = 5
+    d[2, 2] = 4
+    d[1, 2] = 3
+    d[8, 2] = 10
+    d[2, 3] = 5
+    sd = CachedSlict(d)
+    sd2 = sd[:, 2]
+    for k in sd2:
+        assert sd2[k] == k + 2
+    last = (0,)
+    for k in sd2.keys():
+        assert k > last
+        last = k
+    items = sd2.items()
+    vals = sd2.values()
+    for k, v in items:
+        assert v == sd2[k]
+        assert v in vals
+
+
+def test_CachedSlict_3d():
+    d = {}
+    d[2, 2, 2] = 6
+    d[2, 2, 3] = 7
+    d[1, 2, 8] = 11
+    d[8, 2, 1] = 11
+    d[2, 3, 3] = 8
+    sd = CachedSlict(d)
+    sd2 = sd[:, 2, :]
+    for k in sd2:
+        assert sd2[k] == sum(k) + 2
+    last = (0, 0)
+    for k in sd2.keys():
+        assert k > last
+        last = k
+    items = sd2.items()
+    vals = sd2.values()
+    for k, v in items:
+        assert v == sd2[k]
+        assert v in vals
