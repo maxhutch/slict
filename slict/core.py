@@ -78,8 +78,7 @@ class Slict(Mapping):
         return Slict(self.d, sl=full_key)
 
     def __iter__(self):
-        return iter([key_from_slice(k, self.sl)
-                     for k in self.d if key_in_slice(k, self.sl)])
+        return iter(self.keys())
 
     def __len__(self):
         return len([k for k in self.d if key_in_slice(k, self.sl)])
