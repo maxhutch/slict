@@ -51,26 +51,56 @@ class Slict(Mapping):
             self.sl = sl
             self.locs = []
             self.pins = []
+            self.bounds = []
             j = 0
             k = 0
             for i in range(self.dim):
                 if isinstance(sl[i], slice):
                     self.locs.append(j)
+                    self.bounds.append((slice.start, slice.stop))
                     j = j+1
                 else:
                     self.locs.append(-k - 1)
                     self.pins.append(sl[i])
 
-    def __getitem__(self, key):
-        """If the key contains slices, return a new Slict."""
+    def _full_key(self, key):
         if not isinstance(key, tuple):
             key = (key,)
-        full_key = tuple([
-          key[self.locs[i]] if self.locs[i] >= 0
-          else self.pins[-self.locs[i]-1]
-          for i in range(self.dim)])
+        full_key = []
+        j = 0
+        for i in range(self.dim):
+            if not isinstance(self.sl[i], slice):
+                full_key.append(self.sl[i])
+            elif not isinstance(key[j], slice):
+                full_key.append(key[j])
+                j = j + 1
+            else:
+                if self.sl[i].start is None and key[j].start is None:
+                    start = None
+                elif self.sl[i].start is None and key[j].start is not None:
+                    start = key[j].start
+                elif self.sl[i].start is not None and key[j].start is None:
+                    start = self.sl[i].start
+                else:
+                    start = max(self.sl[i].start, key[j].start)
+                if self.sl[i].stop is None and key[j].stop is None:
+                    stop = None
+                elif self.sl[i].stop is None and key[j].stop is not None:
+                    stop = key[j].stop
+                elif self.sl[i].stop is not None and key[j].stop is None:
+                    stop = self.sl[i].stop
+                else:
+                    stop = min(self.sl[i].stop, key[j].stop)
+                full_key.append(slice(start, stop, None))
+                j = j + 1
 
-        if not any([isinstance(k, slice) for k in key]):
+        return tuple(full_key)
+
+    def __getitem__(self, key):
+        """If the key contains slices, return a new Slict."""
+        full_key = self._full_key(key)
+
+        if not any([isinstance(k, slice) for k in full_key]):
             if len(full_key) == 1:
                 full_key = full_key[0]
             return self.d[full_key]
@@ -84,12 +114,7 @@ class Slict(Mapping):
         return len([k for k in self.d if key_in_slice(k, self.sl)])
 
     def __contains__(self, key):
-        if not isinstance(key, tuple):
-            key = (key,)
-        full_key = tuple([
-          key[self.locs[i]] if self.locs[i] >= 0
-          else self.pins[-self.locs[i]-1]
-          for i in range(self.dim)])
+        full_key = self._full_key(key)
         if len(full_key) == 1:
             full_key = full_key[0]
         return key_in_slice(full_key, self.sl) and full_key in self.d
@@ -118,14 +143,8 @@ class CachedSlict(Slict):
 
     def __getitem__(self, key):
         """If the key contains slices, return a new CachedSlict."""
-        if not isinstance(key, tuple):
-            key = (key,)
-        full_key = tuple([
-          key[self.locs[i]] if self.locs[i] >= 0
-          else self.pins[-self.locs[i]-1]
-          for i in range(self.dim)])
-
-        if not any([isinstance(k, slice) for k in key]):
+        full_key = self._full_key(key)
+        if not any([isinstance(k, slice) for k in full_key]):
             if len(full_key) == 1:
                 full_key = full_key[0]
             return self.d[full_key]
