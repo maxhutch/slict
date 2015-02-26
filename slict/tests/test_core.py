@@ -104,9 +104,7 @@ def test_slice_bounds_nested():
     for i in range(10):
         d[i] = i
     sd = Slict(d)[1:9]
-    print(sd.sl)
     sd2 = sd[:2]
-    print(sd2.sl)
     assert len(sd2) == 1
     assert len(sd[1:3]) == 2
     assert len(sd[8:]) == 1
