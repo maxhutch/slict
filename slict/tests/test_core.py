@@ -77,6 +77,18 @@ def test_keys():
         assert k in keys
 
 
+def test_full_keys():
+    d = {}
+    d[2, 2, 2] = 6
+    d[2, 2, 3] = 7
+    d[2, 3, 3] = 8
+    sd = Slict(d)
+    sd2 = sd[2, :, :]
+    full_keys = sd2.full_keys()
+    for fk in full_keys:
+        assert fk in d
+
+
 def test_items():
     d = {}
     d[2, 2, 2] = 6

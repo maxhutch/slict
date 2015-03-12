@@ -123,6 +123,10 @@ class Slict(Mapping):
         return [key_from_slice(k, self.sl)
                 for k in self.d if key_in_slice(k, self.sl)]
 
+    def full_keys(self):
+        return [k
+                for k in self.d if key_in_slice(k, self.sl)]
+
     def items(self):
         return [(key_from_slice(k, self.sl), v)
                 for (k, v) in self.d.items() if key_in_slice(k, self.sl)]
